@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPSS", "..\CSPSS\CSPSS.csproj", "{C25489F8-4A51-47B8-B117-D016DEB71343}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XizheC", "XizheC.csproj", "{228A05BD-CF5F-47E6-9782-DD0E19483C6C}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "双色球出球次数统计", "..\双色球出球次数统计\双色球出球次数统计.vdproj", "{61544579-19E0-484B-9A8B-A9A1E2784F7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C25489F8-4A51-47B8-B117-D016DEB71343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C25489F8-4A51-47B8-B117-D016DEB71343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C25489F8-4A51-47B8-B117-D016DEB71343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C25489F8-4A51-47B8-B117-D016DEB71343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{228A05BD-CF5F-47E6-9782-DD0E19483C6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{228A05BD-CF5F-47E6-9782-DD0E19483C6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{228A05BD-CF5F-47E6-9782-DD0E19483C6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{228A05BD-CF5F-47E6-9782-DD0E19483C6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61544579-19E0-484B-9A8B-A9A1E2784F7E}.Debug|Any CPU.ActiveCfg = Debug
+		{61544579-19E0-484B-9A8B-A9A1E2784F7E}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
