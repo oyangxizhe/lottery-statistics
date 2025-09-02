@@ -13,7 +13,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
-using Excel = Microsoft.Office.Interop.Excel;
+
 using System.Security.Cryptography;
 
 namespace XizheC

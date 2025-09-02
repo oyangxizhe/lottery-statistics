@@ -29,7 +29,7 @@ for item in data["result"]:
     results.append([period, numbers])
 
 # 筛选2025013-2025075期的数据（需确认接口返回的期号范围）
-filtered_data = [row for row in results if 2025013 <= int(row[0]) <= 2025075]
+filtered_data = [row for row in results if 2025075 < int(row[0]) <= 2025100]
 
 # 保存为CSV
 df = pd.DataFrame(filtered_data, columns=["期号", "开奖号码"])

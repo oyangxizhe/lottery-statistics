@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.Data.SqlClient;
 using System.IO;
-using Excel = Microsoft.Office.Interop.Excel;
+
 using System.Data.OleDb;
 using XizheC;
 namespace XizheC

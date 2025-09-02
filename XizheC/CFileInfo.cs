@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Xml;
 using System.Collections;
-using Excel = Microsoft.Office.Interop.Excel;
+
 using System.Data.OleDb;
 using System.Data.SqlClient;
 using System.Web.UI;

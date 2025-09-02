@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.Data.SqlClient;
 using System.IO;
-using Excel = Microsoft.Office.Interop.Excel;
+
 using System.Data.OleDb;
 using XizheC;
 
@@ -781,7 +781,7 @@ LEFT JOIN CURRENCY_MST D ON A.CYID =D.CYID
         public void ExcelPrint(string sqlcondition,string Printpath)
         {
            
-            DataTable dt2 = this.UPDATE_COURSE_BALANCE(sqlcondition);
+            /*DataTable dt2 = this.UPDATE_COURSE_BALANCE(sqlcondition);
             SaveFileDialog sfdg = new SaveFileDialog();
             //sfdg.DefaultExt = @"D:\xls";
             sfdg.Filter = "Excel(*.xls)|*.xls";
@@ -1156,7 +1156,7 @@ LEFT JOIN CURRENCY_MST D ON A.CYID =D.CYID
 
                 worksheet.Cells[16, 3] = d1;
                 worksheet.Cells[16, 5] = d2;
-            }*/
+            }
             dv.RowFilter = "分类科目名称 IN ('可供出售金融资产')";
             dt = dv.ToTable();
             if (dt.Rows.Count > 0)
@@ -1556,7 +1556,7 @@ LEFT JOIN CURRENCY_MST D ON A.CYID =D.CYID
             workbook = null;
             application = null;
             GC.Collect();
-            System.Diagnostics.Process.Start(Printpath);
+            System.Diagnostics.Process.Start(Printpath);*/
         }
         #endregion
     }

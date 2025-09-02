@@ -11,15 +11,19 @@ using System.Web.UI.WebControls.WebParts;
 using System.Xml.Linq;
 using System.Data.SqlClient;
 using System.Text;
-using System.IO;
 using System.Windows.Forms;
-using Excel = Microsoft.Office.Interop.Excel;
+
 using System.Security.Cryptography;
 using System.Collections .Generic ;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Xml;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.IO;
+using Microsoft.CSharp;
+
 namespace XizheC
 {
     public class basec
@@ -51,28 +55,26 @@ namespace XizheC
         // 摘要:
         public string GET_SQLCONNECTION_STRING()
         {
-
-           string url = "";
-            if (RETURN_SERVER_IP_OR_DOMAIN() == "192.168.1.9")
-            {
-                url = "http://" + RETURN_SERVER_IP_OR_DOMAIN() + "/webserver_lan/s_connectionstring.aspx";
-            }
-            else
-            {
-                url = "http://" + RETURN_SERVER_IP_OR_DOMAIN() + "/s_connectionstring.aspx";
-            }
+            string url = "";
+            url = ConfigurationManager.AppSettings["api-uri"].ToString() + "/s_connectionstring.aspx";
             JArray jar = this.RETURN_JARRAY(url, "S_CONNECTIONSTRING=*");
             string M_str_sqlcon = "";
+
             if (jar.Count > 0)
             {
+                //MessageBox.Show("1");
                 M_str_sqlcon = jar[0].ToString();
+
             }
             else
             {
+                //MessageBox.Show(url);
                 ErrowInfo = "与服务器的通讯连接异常";
             }
             return M_str_sqlcon;
-           // return "Data Source=localhost;Database=LOTTERY;User id=sa;PWD=0";
+         
+          
+           //return "Data Source=localhost;Database=LOTTERY;User id=sa;PWD=0";
             
         }
         public SqlConnection getcon()
@@ -123,9 +125,9 @@ namespace XizheC
                 }
                 jar = JArray.Parse(b);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                ErrowInfo = ex.Message;
             }
             return jar;
         }
@@ -225,7 +227,7 @@ namespace XizheC
         public string RETURN_SERVER_IP_OR_DOMAIN()
         {
             string v = "";
-            if (File.Exists(System.IO.Path.GetFullPath("Configuration.config")))
+           if (File.Exists(System.IO.Path.GetFullPath("Configuration.config")))
             {
                 //MessageBox.Show(GetSERVER_IP(System.IO.Path.GetFullPath("项目管理系统客户端.exe.config")));
                 v = RETURN_APPOINT_UNTIL_CHAR(GetSERVER_IP(System.IO.Path.GetFullPath("Configuration.config")), 8, '/');
@@ -1707,156 +1709,7 @@ WHERE A.WAREID='" + wareid + "' AND A.COID='" + coid + "' GROUP BY A.WAREID,A.CO
 
 
         }
-        #region ExcelPrint
-        public void ExcelPrint(DataTable dt2, string BillName, string Printpath)
-        {
-            int j = 0;
-            SaveFileDialog sfdg = new SaveFileDialog();
-            //sfdg.DefaultExt = @"D:\xls";
-            sfdg.Filter = "Excel(*.xls)|*.xls";
-            sfdg.RestoreDirectory = true;
-            sfdg.FileName = Printpath;
-            sfdg.CreatePrompt = true;
-            Microsoft.Office.Interop.Excel.Application application = new Microsoft.Office.Interop.Excel.Application();
-            Excel.Workbook workbook;
-            Excel.Worksheet worksheet;
-
-            DateTime date1 = Convert.ToDateTime(dt2.Rows[0]["订货日期"].ToString());
-            string d1 = date1.ToString("yyyy-MM-dd");
-            DateTime date2 = Convert.ToDateTime(dt2.Rows[0]["交货日期"].ToString());
-            string d2 = date2.ToString("yyyy-MM-dd");
-            for (i = 0; i < dt2.Rows.Count; i++)
-            {
-                workbook = application.Workbooks._Open(sfdg.FileName, Type.Missing, Type.Missing,
-                Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
-                Type.Missing, Type.Missing, Type.Missing);
-                worksheet = (Excel.Worksheet)workbook.Worksheets[1];
-
-                application.Visible = false;
-                application.ExtendList = false;
-                application.DisplayAlerts = false;
-                application.AlertBeforeOverwriting = false;
-                if (BillName == "订单")
-                {
-                    worksheet.Cells[3, 2] = "";
-                    worksheet.Cells[3, 5] = "";
-                    worksheet.Cells[3, 9] = "";
-                    worksheet.Cells[4, 2] = "";
-                    worksheet.Cells[6, 1] = "";
-                    worksheet.Cells[6, 2] = "";
-                    worksheet.Cells[6, 3] = "";
-                    worksheet.Cells[6, 4] = "";
-                    worksheet.Cells[6, 5] = "";
-                    worksheet.Cells[6, 6] = "";
-                    worksheet.Cells[6, 7] = "";
-                    worksheet.Cells[6, 6] = "";
-                    worksheet.Cells[6, 9] = "";
-                    worksheet.Cells[6, 10] = "";
-
-                    worksheet.Cells[3, 2] = dt2.Rows[i]["订单号"].ToString();
-                    worksheet.Cells[3, 5] = d1;
-                    worksheet.Cells[3, 9] = d2;
-                    worksheet.Cells[4, 2] = dt2.Rows[i]["客户"].ToString();
-                    worksheet.Cells[6, 1] = dt2.Rows[i]["品号"].ToString();
-                    worksheet.Cells[6, 2] = dt2.Rows[i]["品名"].ToString();
-                    worksheet.Cells[6, 3] = dt2.Rows[i]["规格"].ToString();
-                    worksheet.Cells[6, 4] = dt2.Rows[i]["单位"].ToString();
-                    worksheet.Cells[6, 5] = dt2.Rows[i]["订单数量"].ToString();
-                    worksheet.Cells[6, 10] = dt2.Rows[i]["加急否"].ToString();
-
-                    workbook.Save();
-                    csharpExcelPrint(sfdg.FileName);
-                }
-                else
-                {
-                    if (j == 0)
-                    {
-                        worksheet.Cells[2, 2] = "";
-                        worksheet.Cells[2, 5] = "";
-                        worksheet.Cells[2, 9] = "";
-                        worksheet.Cells[3, 2] = "";
-                        worksheet.Cells[3, 9] = "";
-                        worksheet.Cells[4, 2] = "";
-                        for (int s1 = 6; s1 <= 10; s1++)
-                        {
-
-                            worksheet.Cells[s1, 1] = "";
-                            worksheet.Cells[s1, 2] = "";
-                            worksheet.Cells[s1, 3] = "";
-                            worksheet.Cells[s1, 4] = "";
-                            worksheet.Cells[s1, 5] = "";
-                            worksheet.Cells[s1, 6] = "";
-                            worksheet.Cells[s1, 7] = "";
-                            worksheet.Cells[s1, 8] = "";
-                            worksheet.Cells[s1, 9] = "";
-                            worksheet.Cells[s1, 10] = "";
-
-                        }
-
-                    }
-                    worksheet.Cells[2, 2] = dt2.Rows[i]["销货单号"].ToString();
-                    worksheet.Cells[2, 5] = d1;
-                    worksheet.Cells[2, 9] = d2;
-                    worksheet.Cells[3, 2] = dt2.Rows[i]["客户"].ToString();
-                    worksheet.Cells[3, 9] = dt2.Rows[i]["电话"].ToString();
-                    worksheet.Cells[4, 2] = dt2.Rows[i]["地址"].ToString();
-                    worksheet.Cells[6, 1] = dt2.Rows[i]["品号"].ToString();
-                    worksheet.Cells[6, 2] = dt2.Rows[i]["品名"].ToString();
-                    worksheet.Cells[6, 3] = dt2.Rows[i]["规格"].ToString();
-                    worksheet.Cells[6, 5] = dt2.Rows[i]["单位"].ToString();
-                    worksheet.Cells[6, 7] = dt2.Rows[i]["销货数量"].ToString();
-                    worksheet.Cells[6, 9] = dt2.Rows[i]["加急否"].ToString();
-                    if (i + 1 < dt2.Rows.Count)
-                    {
-                        worksheet.Cells[7, 1] = dt2.Rows[i + 1]["品号"].ToString();
-                        worksheet.Cells[7, 2] = dt2.Rows[i + 1]["品名"].ToString();
-                        worksheet.Cells[7, 3] = dt2.Rows[i + 1]["规格"].ToString();
-                        worksheet.Cells[7, 5] = dt2.Rows[i + 1]["单位"].ToString();
-                        worksheet.Cells[7, 7] = dt2.Rows[i + 1]["销货数量"].ToString();
-                        worksheet.Cells[7, 9] = dt2.Rows[i + 1]["加急否"].ToString();
-                    }
-                    if (i + 2 < dt2.Rows.Count)
-                    {
-                        worksheet.Cells[8, 1] = dt2.Rows[i + 2]["品号"].ToString();
-                        worksheet.Cells[8, 2] = dt2.Rows[i + 2]["品名"].ToString();
-                        worksheet.Cells[8, 3] = dt2.Rows[i + 2]["规格"].ToString();
-                        worksheet.Cells[8, 5] = dt2.Rows[i + 2]["单位"].ToString();
-                        worksheet.Cells[8, 7] = dt2.Rows[i + 2]["销货数量"].ToString();
-                        worksheet.Cells[8, 9] = dt2.Rows[i + 2]["加急否"].ToString();
-                    }
-                    if (i + 3 < dt2.Rows.Count)
-                    {
-                        worksheet.Cells[9, 1] = dt2.Rows[i + 3]["品号"].ToString();
-                        worksheet.Cells[9, 2] = dt2.Rows[i + 3]["品名"].ToString();
-                        worksheet.Cells[9, 3] = dt2.Rows[i + 3]["规格"].ToString();
-                        worksheet.Cells[9, 5] = dt2.Rows[i + 3]["单位"].ToString();
-                        worksheet.Cells[9, 7] = dt2.Rows[i + 3]["销货数量"].ToString();
-                        worksheet.Cells[9, 9] = dt2.Rows[i + 3]["加急否"].ToString();
-                    }
-                    if (i + 4 < dt2.Rows.Count)
-                    {
-                        worksheet.Cells[10, 1] = dt2.Rows[i + 4]["品号"].ToString();
-                        worksheet.Cells[10, 2] = dt2.Rows[i + 4]["品名"].ToString();
-                        worksheet.Cells[10, 3] = dt2.Rows[i + 4]["规格"].ToString();
-                        worksheet.Cells[10, 5] = dt2.Rows[i + 4]["单位"].ToString();
-                        worksheet.Cells[10, 7] = dt2.Rows[i + 4]["销货数量"].ToString();
-                        worksheet.Cells[10, 9] = dt2.Rows[i + 4]["加急否"].ToString();
-                    }
-
-                    workbook.Save();
-                    csharpExcelPrint(sfdg.FileName);
-                    i = i + 4;
-
-                }
-            }
-            application.Quit();
-            worksheet = null;
-            workbook = null;
-            application = null;
-            GC.Collect();
-
-        }
-        #endregion
+ 
         #region csharpExcelPrint
         public  void csharpExcelPrint(string path)
         {
@@ -2448,10 +2301,95 @@ ORDER BY A.CAID
         #endregion
 
         #region toexcel
+public void dgvtoExcel_for_epplus(DataGridView dataGridView1, string str1)
+{
+    SaveFileDialog sfdg = new SaveFileDialog();
+    sfdg.DefaultExt = "xlsx";
+    sfdg.Filter = "Excel(*.xlsx)|*.xlsx|Excel 97-2003(*.xls)|*.xls";
+    sfdg.FileName = str1;
+    sfdg.Title = "导出到EXCEL";
+    
+    int n = dataGridView1.RowCount;
+    int w = dataGridView1.ColumnCount;
+
+    if (sfdg.ShowDialog() == DialogResult.OK)
+    {
+        try
+        {
+            using (ExcelPackage excelPackage = new ExcelPackage())
+            {
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet1");
+                
+                // 设置表头
+                for (int j = 0; j < dataGridView1.ColumnCount; j++)
+                {
+                    worksheet.Cells[1, j + 1].Value = dataGridView1.Columns[j].HeaderText;
+                    worksheet.Cells[1, j + 1].Style.Font.Bold = true;
+                    worksheet.Cells[1, j + 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                }
+                
+                // 填充数据
+                for (int i = 0; i < dataGridView1.RowCount; i++)
+                {
+                    for (int x = 0; x < dataGridView1.ColumnCount; x++)
+                    {
+                        if (dataGridView1[x, i].Value != null)
+                        {
+                            var cellValue = dataGridView1[x, i].Value;
+                            
+                            // 处理字符串类型，防止科学计数法等问题
+                            if (dataGridView1[x, i].ValueType == typeof(string) || 
+                                dataGridView1[x, i].ValueType == typeof(String))
+                            {
+                                worksheet.Cells[i + 2, x + 1].Value = cellValue.ToString();
+                                worksheet.Cells[i + 2, x + 1].Style.Numberformat.Format = "@"; // 文本格式
+                            }
+                            else
+                            {
+                                worksheet.Cells[i + 2, x + 1].Value = cellValue;
+                            }
+                        }
+                    }
+                    
+                    // 显示进度（可选）
+                    if (i % 100 == 0)
+                    {
+                        Application.DoEvents();
+                    }
+                }
+                
+                // 设置边框
+                using (ExcelRange range = worksheet.Cells[1, 1, n + 1, w])
+                {
+                    range.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    range.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                    range.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                    range.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                }
+                
+                // 自动调整列宽
+                worksheet.Cells[1, 1, n + 1, w].AutoFitColumns();
+                
+                // 保存文件
+                FileInfo excelFile = new FileInfo(sfdg.FileName);
+                excelPackage.SaveAs(excelFile);
+            }
+            
+            MessageBox.Show("成功导出！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("导出失败："+ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+}
+#endregion
+
+        #region toexcel
         public void dgvtoExcel(DataGridView dataGridView1, string str1)
         {
 
-            SaveFileDialog sfdg = new SaveFileDialog();
+            /*SaveFileDialog sfdg = new SaveFileDialog();
             sfdg.DefaultExt = "xls";
             sfdg.Filter = "Excel(*.xls)|*.xls";
             //sfdg.RestoreDirectory = true;
@@ -2518,7 +2456,7 @@ ORDER BY A.CAID
                     GC.Collect();
                 }
 
-            }
+            }*/
         }
 
         #endregion

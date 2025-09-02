@@ -7,11 +7,12 @@ using System.Text;
 using System.Windows.Forms;
 using System.Globalization;
 using System.Data.SqlClient;
-using System.IO;
-using Excel = Microsoft.Office.Interop.Excel;
 using System.Data.OleDb;
 using XizheC;
-
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.IO;
+using Microsoft.CSharp;
 namespace XizheC
 {
     public class ExcelToCSHARP
@@ -206,7 +207,48 @@ MAKERID=@MAKERID
             sqlo = sql1;
         }
 
-     
+        #region 使用EPPlus导入Excel
+        public static DataSet ImportExcelToDataSet_for_epplus(string filePath)
+        {
+            DataSet ds = new DataSet();
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (ExcelPackage package = new ExcelPackage(new FileInfo(filePath)))
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; // 获取第一个工作表
+
+                    // 读取表头
+                    int colCount = worksheet.Dimension.End.Column;
+                    for (int col = 1; col <= colCount; col++)
+                    {
+                        dt.Columns.Add(worksheet.Cells[1, col].Text ?? "Column{col}");
+                    }
+
+                    // 读取数据行
+                    int rowCount = worksheet.Dimension.End.Row;
+                    for (int row = 2; row <= rowCount; row++) // 从第2行开始（跳过表头）
+                    {
+                        DataRow dataRow = dt.NewRow();
+                        for (int col = 1; col <= colCount; col++)
+                        {
+                            dataRow[col - 1] = worksheet.Cells[row, col].Text;
+                        }
+                        dt.Rows.Add(dataRow);
+                    }
+                }
+
+                ds.Tables.Add(dt);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("导入错误: " + ex.Message);
+            }
+
+            return ds;
+        }
+        #endregion
         #region importExcelToDataSet
         public static DataSet importExcelToDataSet(string FilePath, string tablename)
         {
@@ -415,6 +457,146 @@ MAKERID=@MAKERID
                 b = true;
             }
             return b;
+        }
+        #endregion
+        #region showdata (改造后)
+        public void showdata_for_epplus(string path)
+        {
+            try
+            {
+                DataSet ds = ImportExcelToDataSet_for_epplus(path);
+                DataTable dt = ds.Tables[0];
+
+                // 移除空行
+                var rowsToRemove = new List<DataRow>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row.IsNull(0) || string.IsNullOrEmpty(row[0].ToString()))
+                        rowsToRemove.Add(row);
+                }
+
+                foreach (var row in rowsToRemove)
+                {
+                    dt.Rows.Remove(row);
+                }
+
+                // 处理数据
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    PERIOD = dt.Rows[i][0].ToString();
+                    string ballData = dt.Rows[i][1].ToString();
+
+                    if (ballData.Length == 20)
+                    {
+                        RED_BALL_ONE = ballData.Substring(0, 2);
+                        RED_BALL_TWO = ballData.Substring(3, 2);
+                        RED_BALL_THREE = ballData.Substring(6, 2);
+                        RED_BALL_FOUR = ballData.Substring(9, 2);
+                        RED_BALL_FIVE = ballData.Substring(12, 2);
+                        RED_BALL_SIX = ballData.Substring(15, 2);
+                        BLUE_BALL = ballData.Substring(18, 2);
+
+                        // 调试信息（可选）
+                        /*
+                        StringBuilder sqb = new StringBuilder();
+                        sqb.AppendFormat("第 {0} 期 ", PERIOD);
+                        sqb.AppendFormat("红球一为：{0} ", RED_BALL_ONE);
+                        sqb.AppendFormat("红球二为：{0} ", RED_BALL_TWO);
+                        sqb.AppendFormat("红球三为：{0} ", RED_BALL_THREE);
+                        sqb.AppendFormat("红球四为：{0} ", RED_BALL_FOUR);
+                        sqb.AppendFormat("红球五为：{0} ", RED_BALL_FIVE);
+                        sqb.AppendFormat("红球六为：{0} ", RED_BALL_SIX);
+                        sqb.AppendFormat("蓝球为：{0} ", BLUE_BALL);
+                        MessageBox.Show(sqb.ToString());
+                        */
+                    }
+                    if (ballData.Length != 20)
+                    {
+                        // 处理长度不符合的数据
+                        continue;
+                    }
+                    else if (JuageACCODEFormat(i))
+                    {
+                        // 其他判断逻辑
+                        continue;
+                    }
+                    // 批量写入优化建议，这里因为正常实际写入是小量的且需要判断是否重复所以先不使用批量导入。
+                        SQlcommandE(sql1);
+                    
+                }
+
+                // 批量写入数据库的优化版本（建议使用）批量导入效率高，
+                //BatchInsertToDatabase(dt);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("数据处理错误: " + ex.Message);
+            }
+        }
+        #endregion
+        #region 批量插入数据库的优化方法
+        private void BatchInsertToDatabase(DataTable dt)
+        {
+            List<string> sqlCommands = new List<string>();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                string ballData = row[1].ToString();
+
+                if (ballData.Length == 20)
+                {
+                    string period = row[0].ToString();
+                    string red1 = ballData.Substring(0, 2);
+                    string red2 = ballData.Substring(3, 2);
+                    string red3 = ballData.Substring(6, 2);
+                    string red4 = ballData.Substring(9, 2);
+                    string red5 = ballData.Substring(12, 2);
+                    string red6 = ballData.Substring(15, 2);
+                    string blue = ballData.Substring(18, 2);
+
+                    // 构建SQL语句（根据你的实际表结构调整）
+                    string sql = string.Format("INSERT INTO double_ball (PERIOD,RED_BALL_ONE,RED_BALL_TWO,RED_BALL_THREE,RED_BALL_FOUR,RED_BALL_FIVE,RED_BALL_SIX,BLUE_BALL) " +
+                                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')",period,red1,red2,red3,red4,red5,red6,blue);
+
+                    sqlCommands.Add(sql);
+                }
+            }
+
+            // 批量执行SQL（建议使用事务）
+            if (sqlCommands.Count > 0)
+            {
+                ExecuteBatchSqlCommands(sqlCommands);
+            }
+        }
+
+        private void ExecuteBatchSqlCommands(List<string> sqlCommands)
+        {
+            // 这里实现批量SQL执行逻辑
+            // 可以使用事务来提高性能和保证数据一致性
+            try
+            {
+                using (var connection = new SqlConnection(bc.GET_SQLCONNECTION_STRING()))
+                {
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        foreach (var sql in sqlCommands)
+                        {
+                            using (var command = new SqlCommand(sql, connection, transaction))
+                            {
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                        transaction.Commit();
+                    }
+                }
+
+                MessageBox.Show("成功导入"+sqlCommands.Count+"条数据", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("批量插入失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
         #region showdata
